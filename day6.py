@@ -53,22 +53,50 @@ What is the total number of direct and indirect orbits in your map data?
 
 from lib import get_input
 
-sample_data = ['COM)B', 'C)D', 'B)C', 'D)E', 'E)F',
+sample_data = ['COM)B', 'B)C', 'C)D', 'D)E', 'E)F',
                'B)G', 'G)H', 'D)I', 'E)J', 'J)K', 'K)L']
+
+sample_data2 = ['COM)B', 'C)D', 'B)C', 'D)E', 'E)F',
+                'B)G', 'G)H', 'D)I', 'E)J', 'J)K', 'K)L']
+
+
+def find_coms(data):
+    d = {}
+    for orbit in data:
+        a, b = orbit.split(")")
+        if b not in d:
+            d[b] = a
+    print(list(set(filter(lambda x: x not in d.keys(), d.values()))))
+
+
+def build_graph(data):
+    g = {}
+    for orbit in data:
+        a, b = orbit.split(")")
+        g[b] = a
+        # g[b].append(a)
+    return g
 
 
 def part1(data):
     d = {}
+    total = 0
     for orbit in data:
         a, b = orbit.split(')')
         if a not in d:
             d[a] = 0
-        d[b] = d[a] + 1
-    print(d)
-    print(sum(d.values()))
+        d[b] += d[a]
+        total += d[a]
+    print(total)
 
 
 if __name__ == "__main__":
     data = get_input(6)
-    data = sample_data
-    part1(data)
+    #data = sample_data
+    graph = build_graph(data)
+    # print(graph)
+    not_in_orbit = list(
+        filter(
+            lambda x: x not in graph.keys(),
+            graph.values()))
+    print(not_in_orbit)
