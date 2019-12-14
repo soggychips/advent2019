@@ -49,9 +49,56 @@ COM orbits nothing.
 The total number of direct and indirect orbits in this example is 42.
 
 What is the total number of direct and indirect orbits in your map data?
+
+--- Part Two ---
+Now, you just need to figure out how many orbital transfers you (YOU) need to take to get to Santa (SAN).
+
+You start at the object YOU are orbiting; your destination is the object SAN is orbiting. An orbital transfer lets you move from any object to an object orbiting or orbited by that object.
+
+For example, suppose you have the following map:
+
+COM)B
+B)C
+C)D
+D)E
+E)F
+B)G
+G)H
+D)I
+E)J
+J)K
+K)L
+K)YOU
+I)SAN
+Visually, the above map of orbits looks like this:
+
+                          YOU
+                         /
+        G - H       J - K - L
+       /           /
+COM - B - C - D - E - F
+               \
+                I - SAN
+In this example, YOU are in orbit around K, and SAN is in orbit around I. To move from K to I, a minimum of 4 orbital transfers are required:
+
+K to J
+J to E
+E to D
+D to I
+Afterward, the map of orbits looks like this:
+
+        G - H       J - K - L
+       /           /
+COM - B - C - D - E - F
+               \
+                I - SAN
+                 \
+                  YOU
+What is the minimum number of orbital transfers required to move from the object YOU are orbiting to the object SAN is orbiting? (Between the objects they are orbiting - not between YOU and SAN.)
 """
 
-from lib import get_input
+from lib import get_input_via_requests as get_input
+from pprint import pprint
 
 sample_data = ['COM)B', 'B)C', 'C)D', 'D)E', 'E)F',
                'B)G', 'G)H', 'D)I', 'E)J', 'J)K', 'K)L']
@@ -59,44 +106,45 @@ sample_data = ['COM)B', 'B)C', 'C)D', 'D)E', 'E)F',
 sample_data2 = ['COM)B', 'C)D', 'B)C', 'D)E', 'E)F',
                 'B)G', 'G)H', 'D)I', 'E)J', 'J)K', 'K)L']
 
+part2_sample_data = ['COM)B', 'B)C', 'C)D', 'D)E', 'E)F',
+                     'B)G', 'G)H', 'D)I', 'E)J', 'J)K', 'K)L', 'K)YOU', 'I)SAN']
 
-def find_coms(data):
-    d = {}
-    for orbit in data:
-        a, b = orbit.split(")")
-        if b not in d:
-            d[b] = a
-    print(list(set(filter(lambda x: x not in d.keys(), d.values()))))
+graph = {}
 
 
 def build_graph(data):
+    """
+    Builds dict where values are the planets that the keys orbit
+    """
     g = {}
     for orbit in data:
         a, b = orbit.split(")")
-        g[b] = a
-        # g[b].append(a)
+        g[b] = {'planet': a, 'distance': None if a != "COM" else 1}
     return g
 
 
-def part1(data):
-    d = {}
-    total = 0
-    for orbit in data:
-        a, b = orbit.split(')')
-        if a not in d:
-            d[a] = 0
-        d[b] += d[a]
-        total += d[a]
-    print(total)
+def calc_distance(planet):
+    if graph[planet]['distance']:
+        return graph[planet]['distance']
+    else:
+        graph[planet]['distance'] = calc_distance(graph[planet]['planet']) + 1
+        return graph[planet]['distance']
+
+
+def part1(graph):
+    pprint(graph)
+    for planet in filter(lambda p: graph[p]['distance'] is None, graph.keys()):
+        calc_distance(planet)
+    print(sum(map(lambda v: v['distance'], graph.values())))
+
+
+def part2(graph):
+    print("You are orbiting {}".format(graph['YOU']))
+    print("Santa is orbiting {}".format(graph['SAN']))
 
 
 if __name__ == "__main__":
     data = get_input(6)
-    #data = sample_data
     graph = build_graph(data)
-    # print(graph)
-    not_in_orbit = list(
-        filter(
-            lambda x: x not in graph.keys(),
-            graph.values()))
-    print(not_in_orbit)
+    part1(graph)
+    part2(graph)
