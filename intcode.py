@@ -35,10 +35,16 @@ class Intcode(object):
         99: 0
     }
 
-    def __init__(self, day=2, _input=None):
+    def __init__(self, day=2, _input=None, use_phase_settings=False, phase_setting=0, input_signal=0, amp_loop=False, print_output=False):
         self.instruction_pointer = 0
         self.input = get_input(day) if not _input else _input
         self.diagnostic_codes = []
+        self.use_phase_settings = use_phase_settings
+        self.phase_setting = phase_setting
+        self.input_signal = input_signal
+        self.first_input = True
+        self.print_output = print_output
+        self.amp_loop = amp_loop
 
     def run(self):
         out = self.step()
@@ -75,13 +81,25 @@ class Intcode(object):
                            ] if param_modes[1] == 0 else instruction[2]
             self.input[instruction[3]] = a * b
         elif op_code == 3:
+          if self.use_phase_settings:
+            if self.first_input:
+              # use phase setting
+              self.input[instruction[1]] = self.phase_setting
+              self.first_input = False
+            else:
+              # use input signal
+              self.input[instruction[1]] = self.input_signal
+          else:
             single_int_input = int(input("Input a single integer:\n>"))
             self.input[instruction[1]] = single_int_input
         elif op_code == 4:
             diag_code = self.input[instruction[1]] if int(
                 param_modes[0]) == 0 else instruction[1]
             self.diagnostic_codes.append(diag_code)
-            print("Output: {}".format(diag_code))
+            if self.amp_loop:
+              self.input_signal = diag_code
+            if self.print_output:
+              print("Output: {}".format(diag_code))
         elif op_code == 5:
             param = self.input[instruction[1]
                                ] if param_modes[0] == 0 else instruction[1]
@@ -115,7 +133,8 @@ class Intcode(object):
             else:
                 self.input[instruction[3]] = 0
         elif op_code == 99:
-            print("Program halting!")
+            if self.print_output:
+              print("Program halting!")
             return True
         else:
             print("Unknown opcode: {}".format(op_code))

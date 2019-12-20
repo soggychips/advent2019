@@ -5,13 +5,15 @@ def get_input(day):
         return data[str(day)]
 
 
-def get_input_via_requests(day):
+def get_input_via_requests(day, log=True):
     import os
     if str(day) in os.listdir("input"):
-        print("Data for day {} found locally.".format(day))
+        if log:
+            print("Data for day {} found locally.".format(day))
         text = open("input/{}".format(day), 'r').read()
     else:
-        print("Data for day {} not found locally. Downloading...".format(day))
+        if log:
+            print("Data for day {} not found locally. Downloading...".format(day))
         import requests
         from config import cookies
         url = "https://adventofcode.com/2019/day/{}/input".format(day)
