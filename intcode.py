@@ -35,7 +35,7 @@ class Intcode(object):
         99: 0
     }
 
-    def __init__(self, day=2, _input=None, use_phase_settings=False, phase_setting=0, input_signal=0, amp_loop=False, print_output=False):
+    def __init__(self, day=2, _input=None, use_phase_settings=False, phase_setting=0, input_signal=0, print_output=False):
         self.instruction_pointer = 0
         self.input = get_input(day) if not _input else _input
         self.diagnostic_codes = []
@@ -44,7 +44,6 @@ class Intcode(object):
         self.input_signal = input_signal
         self.first_input = True
         self.print_output = print_output
-        self.amp_loop = amp_loop
 
     def run(self):
         out = self.step()
@@ -69,18 +68,21 @@ class Intcode(object):
 
         # Follow instruction
         if op_code == 1:
+            # add
             a = self.input[instruction[1]
                            ] if param_modes[0] == 0 else instruction[1]
             b = self.input[instruction[2]
                            ] if param_modes[1] == 0 else instruction[2]
             self.input[instruction[3]] = a + b
         elif op_code == 2:
+            # multiply
             a = self.input[instruction[1]
                            ] if param_modes[0] == 0 else instruction[1]
             b = self.input[instruction[2]
                            ] if param_modes[1] == 0 else instruction[2]
             self.input[instruction[3]] = a * b
         elif op_code == 3:
+          # input
           if self.use_phase_settings:
             if self.first_input:
               # use phase setting
@@ -93,14 +95,14 @@ class Intcode(object):
             single_int_input = int(input("Input a single integer:\n>"))
             self.input[instruction[1]] = single_int_input
         elif op_code == 4:
+            # output
             diag_code = self.input[instruction[1]] if int(
                 param_modes[0]) == 0 else instruction[1]
             self.diagnostic_codes.append(diag_code)
-            if self.amp_loop:
-              self.input_signal = diag_code
             if self.print_output:
               print("Output: {}".format(diag_code))
         elif op_code == 5:
+            # jump if true
             param = self.input[instruction[1]
                                ] if param_modes[0] == 0 else instruction[1]
             if param != 0:
@@ -108,6 +110,7 @@ class Intcode(object):
                 self.instruction_pointer = self.input[instruction[2]
                                                       ] if param_modes[1] == 0 else instruction[2]
         elif op_code == 6:
+            # jump if false
             param = self.input[instruction[1]
                                ] if param_modes[0] == 0 else instruction[1]
             if param == 0:
@@ -115,6 +118,7 @@ class Intcode(object):
                 self.instruction_pointer = self.input[instruction[2]
                                                       ] if param_modes[1] == 0 else instruction[2]
         elif op_code == 7:
+            # less than
             a = self.input[instruction[1]
                            ] if param_modes[0] == 0 else instruction[1]
             b = self.input[instruction[2]
@@ -124,6 +128,7 @@ class Intcode(object):
             else:
                 self.input[instruction[3]] = 0
         elif op_code == 8:
+            # equals
             a = self.input[instruction[1]
                            ] if param_modes[0] == 0 else instruction[1]
             b = self.input[instruction[2]
@@ -134,7 +139,7 @@ class Intcode(object):
                 self.input[instruction[3]] = 0
         elif op_code == 99:
             if self.print_output:
-              print("Program halting!")
+              print("Opcode 99 reached. Program halting!")
             return True
         else:
             print("Unknown opcode: {}".format(op_code))
